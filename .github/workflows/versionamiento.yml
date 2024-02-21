@@ -45,6 +45,10 @@ jobs:
           npm version patch
         fi
 
+        if [[ "${{ github.ref }}" == "refs/heads/pre-minor" && "${{ github.event.before }}" != "${{ github.sha }}" ]]; then
+          npm version patch
+        fi
+
         # Publicar el tag y la versión
         git push --follow-tags
       env:
