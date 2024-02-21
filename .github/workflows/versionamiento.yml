@@ -1,4 +1,4 @@
-name: Versioning test
+name: Versioning
 
 on:
   push:
@@ -10,42 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
+      - uses: actions/checkout@v4
+        with:
           fetch-depth: 0
 
-    - uses: actions/setup-node@v4
-      with:
+      - uses: actions/setup-node@v4
+        with:
           node-version: '14'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Stage changes
-      run: |
-        git config --local user.email "actions@github.com"
-        git config --local user.name "GitHub Actions"
-        git add package.json
+      - name: Stage changes
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
 
-    - name: Commit changes
-      run: |
-        git commit -m "Update version" || true
+      - name: Commit changes
+        run: |
+          git commit -m "Update version" || true
 
-    - name: Determine version and apply
-      run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          npm version major
-        elif [[ "${{ github.ref }}" == "refs/heads/minor" ]]; then
-          npm version minor
-        elif [[ "${{ github.ref }}" == "refs/heads/pre-minor" ]]; then
-          npm version prerelease --preid=rc
-        elif [[ "${{ github.ref }}" == "refs/heads/pre-patch" ]]; then
-          npm version prerelease --preid=rc
-        else
-          npm version patch
-        fi
+      - name: Determine version and apply
+        run: |
+          commit_message=$(git log --format=%B -n 1 ${{ github.sha }})
 
-        # Publicar el tag y la versión
-        git push --follow-tags
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            npm version major
+          elif [[ "${{ github.ref }}" == "refs/heads/minor" ]]; then
+            npm version minor
+          elif [[ "${{ github.ref }}" == "refs/heads/pre-minor" ]]; then
+            npm version prerelease --preid=rc
+          elif [[ "${{ github.ref }}" == "refs/heads/pre-patch" ]]; then
+            npm version prerelease --preid=rc
+          elif [[ "${{ github.ref }}" == "refs/heads/pre-patch" && "${{ github.base_ref }}" == "refs/heads/minor" ]]; then
+            npm version patch
+          else
+            npm version patch
+          fi
+
+          # Publicar el tag y la versión
+          git push --follow-tags
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
+
