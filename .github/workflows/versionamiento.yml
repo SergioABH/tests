@@ -34,16 +34,19 @@ jobs:
     - name: Determine version and apply
       run: |
         if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          npm version major
+            npm version major
         elif [[ "${{ github.ref }}" == "refs/heads/minor" ]]; then
-          npm version minor
+            npm version minor
         elif [[ "${{ github.ref }}" == "refs/heads/pre-minor" ]]; then
-          npm version prerelease --preid=rc
+            npm version prerelease --preid=rc
         elif [[ "${{ github.ref }}" == "refs/heads/pre-patch" ]]; then
-          npm version prerelease --preid=rc
+            npm version prerelease --preid=rc
+        elif [[ "${{ github.ref }}" == "refs/heads/pre-minor" && "${{ github.event.before }}" != "${{ github.sha }}" ]]; then
+            npm version patch
         else
-          npm version patch
+            npm version patch
         fi
+
 
         if [[ "${{ github.ref }}" == "refs/heads/pre-minor" && "${{ github.event.before }}" != "${{ github.sha }}" ]]; then
           npm version patch
